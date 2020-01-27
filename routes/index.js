@@ -6,7 +6,15 @@ var apiRouter = require('./apiRouter')
 app.use('/api', apiRouter)
 
 router.get('/home', (req, res, next) => {
-  res.render('home', { title: 'This is home' })
+  res.render('home', { title: 'Home' })
+})
+
+router.get('/videochat', (req, res, next) => {
+  res.render('videoChat', { title: 'videochat' })
+})
+
+router.get('/supporter', (req, res, next) => {
+  res.render('supporter', { title: 'supporter' })
 })
 
 /* GET home page. */

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+  </head>
+  <body>
+    <h1>Political Roulette</h1>
+    <p>Talk to the other side. Choose your party below to start.</p>
+
+      <input class="username" type="text" name="username" placeholder="name"><br>
+      <input class="useremail" type="text" name="email" placeholder="email"><br>
+      <input class="partyCheckbox" type="radio" name="party" value="conservative" checked> I'M A LIBERAL, BRING ME A CONSERVATIVE!<br>
+      <input class="partyCheckbox" type="radio" name="party" value="liberal"> I'M A CONSERVATIVE, BRING ME A LIBERAL!<br>
+
+      <button id="getPartyBtn" onclick="startVideoChat()">VIDEO CHAT NOW</button>
+
+      <div class="videoChatBox" style="display: none;">
+        <div class="container">
+          <div class="row h-100 w-100">
+            <div class="col-12 col-sm-6 d-flex justify-content-center">
+              <div class="embed-responsive embed-responsive-16by9">
+                <video class="emned-responsive-item" muted></video>
+              </div>
+            </div>
+            <div id="peerDiv" class="col-12 col-sm-6 d-flex justify-content-center">
+              <div class="embed-responsive embed-responsive-16by9">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="/js/bundle/main.js"></script>
+      <script>
+        function startVideoChat() {
+          const checkedElement = document.querySelector('.partyCheckbox:checked')
+          const username = document.querySelector('.username').value
+          const email = document.querySelector('.useremail').value
+          var checkedValue = ''
+          if (!checkedElement.value || !username || !email) {
+            var text = ''
+            if (!checkedElement.value) text += 'you have to select a party to proceed'
+            if (!checkedElement && !username) text += ', '
+            if (!username) text += 'please enter your name'
+            if (!username && !email) text += ', '
+            if (!email) text += 'please enter your email'
+            alert(text)
+            return
+          }
+          checkedValue = checkedElement.value
+          document.querySelector('#getPartyBtn').disabled = true
+          document.querySelector('.videoChatBox').style.display = 'block'
+          console.log('##############', checkedValue)
+          getUserMediaStream()
+          /*
+          // pure JS implementation:
+          var checkedValue = null; 
+          var inputElements = document.getElementsByClassName('messageCheckbox');
+          for (var i=0; inputElements[i]; ++i) {
+            if (inputElements[i].checked){
+              checkedValue = inputElements[i].value;
+              break;
+            }
+          } 
+           */
+        }
+      </script>
+    
+  </body>
+</html>

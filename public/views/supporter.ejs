@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>WELCOME TO SUPPORTER PAGE</h1>
+
+    <input class="username" type="text" name="username" placeholder="name"><br>
+    <input class="useremail" type="text" name="email" placeholder="email"><br>
+    <input class="partyCheckbox" type="radio" name="party" value="liberal" checked> I'M A LIBERAL<br>
+    <input class="partyCheckbox" type="radio" name="party" value="conservative"> I'M A CONSERVATIVE<br>
+
+    <button id="getPartyBtn" onclick="registerSupporter()">GO ONLINE NOW</button>
+
+    <script>
+        function registerSupporter() {
+          const checkedElement = document.querySelector('.partyCheckbox:checked')
+          const username = document.querySelector('.username').value
+          const email = document.querySelector('.useremail').value
+          var checkedValue = ''
+          if (!checkedElement.value || !username || !email) {
+            var text = ''
+            if (!checkedElement.value) text += 'you have to select a party to proceed'
+            if (!checkedElement && !username) text += ', '
+            if (!username) text += 'please enter your name'
+            if (!username && !email) text += ', '
+            if (!email) text += 'please enter your email'
+            alert(text)
+            return
+          }
+          checkedValue = checkedElement.value
+          document.querySelector('#getPartyBtn').disabled = true
+          console.log('party preference for yang supporter', checkedValue)
+          console.log('supporter registered')
+        }
+    </script>
+
+
+  </body>
+</html>
