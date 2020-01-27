@@ -1,6 +1,6 @@
 const Peer = require('simple-peer')
 const io = require('socket.io-client')
-const socket = io('http://127.0.0.1:3000')
+const socket = io('/')
 var getUserMedia = require('getusermedia')
 const video = document.querySelector('video')
 const client = {}
