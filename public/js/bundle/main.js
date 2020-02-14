@@ -17319,19 +17319,16 @@ const video = document.querySelector('video')
 const client = {}
 var browserStream
 
-function getUserMediaStream () {
+function getUserMediaStream (userData) {
 //   var stream
-  getUserMedia({ video: true, audio: true }, function (err, stream) {
+  getUserMedia({ video: true, audio: false }, function (err, stream) {
     if (err) {
       console.log('failed to get media access', err)
       document.write(err)
     } else {
       browserStream = stream
       console.log('successfully fetched user media stream', stream)
-      //   this.stream = stream
-      socket.emit('NewClient')
-      video.srcObject = stream
-      video.play()
+      socket.emit('join', userData)
     }
   })
 }
@@ -17339,7 +17336,9 @@ function getUserMediaStream () {
 // used to start a peer
 function initPeer (type) {
   const peer = new Peer({ initiator: (type === 'init'), stream: browserStream, trickle: false })
+  console.log('init peer called for ', type)
   peer.on('stream', function (stream) {
+    console.log('stream started for ', type)
     createVideo(stream)
   })
   peer.on('close', function () {
@@ -17352,9 +17351,12 @@ function initPeer (type) {
 // for creating a peer of type init, called when we want the peer to send the offer
 function makePeer () {
   client.gotAnswer = false
+  console.log('make peer called')
   const peer = initPeer('init', browserStream)
   peer.on('signal', function (data) {
+    console.log('got signal from peer: ', data)
     if (!client.gotAnswer) {
+      console.log('client hasnt got an answer')
       socket.emit('offer', data)
     }
   })
@@ -17363,14 +17365,17 @@ function makePeer () {
 
 // when we get an offer from another client and we want to send the answer
 function frontAnswer (offer) {
+  console.log('front answer, initating peer of type notInit', offer)
   const peer = initPeer('notInit')
   peer.on('signal', function (data) {
+    console.log('signal received; data: ', data)
     socket.emit('answer', data)
   })
   peer.signal(offer)
 }
 
 function signalAnswer (answer) {
+  console.log('signal answer fron be', answer)
   client.gotAnswer = true
   const peer = client.peer
   peer.signal(answer)
@@ -17390,12 +17395,18 @@ function sessionActive () {
 }
 
 socket.on('connect', function () {
-  console.log('connected to socket')
+  console.log('socket connection successful')
 })
 socket.on('BackOffer', frontAnswer)
 socket.on('BackAnswer', signalAnswer)
 socket.on('SessionActive', sessionActive)
 socket.on('CreatePeer', makePeer)
+
+socket.on('joined', function (data) {
+  console.log('user has joined', data.data)
+  video.srcObject = browserStream
+  video.play()
+})
 
 window.getUserMediaStream = getUserMediaStream
 

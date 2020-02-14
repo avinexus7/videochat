@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const config = require('../config')
+const ops = require('../operations/videoChat')
 
 /**
  * Module dependencies.
@@ -12,7 +14,7 @@ var http = require('http')
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000')
+var port = normalizePort(config.port)
 app.set('port', port)
 
 /**
@@ -21,10 +23,35 @@ app.set('port', port)
 
 var server = http.createServer(app)
 var io = require('socket.io')(server)
+var redis = require('socket.io-redis')
+io.adapter(redis({ host: config.redis.host, port: config.redis.port }))
 let clients = 0
 io.on('connection', function (socket) {
   console.log('connected to socket at:', socket.client.request.headers)
-  socket.on('NewClient', function () {
+  socket.on('join', async function (userData) {
+    socket.join(userData.username)
+    socket.userid = userData.username
+    console.log('joining user', socket.userid)
+    socket.emit('joined', { message: 'success', data: userData })
+
+    try {
+      const oppParty = await ops.connectWithOppositeParty(userData)
+      console.log(oppParty)
+      if (oppParty.success) {
+        await ops.makePartiesBusy(oppParty.user)
+        this.emit('CreatePeer')
+      }
+    } catch (error) {
+      console.log('problem with connexting to opposite party', JSON.stringify(error))
+      socket.emit('error', { message: 'could not connect to other party due to an error', error: error })
+    }
+  })
+  socket.on('NewClient', function (data) {
+    if (!data.username /* || !data.useremail */ || !data.party) {
+      this.emit('NoDetailsGiven')
+    } else {
+
+    }
     if (clients < 2) {
       if (clients === 1) {
         this.emit('CreatePeer')
@@ -33,16 +60,18 @@ io.on('connection', function (socket) {
       this.emit('SessionActive')
     }
     clients++
+    console.log('new client connected, incremented client count', clients)
   })
   socket.on('offer', sendOffer)
   socket.on('answer', sendAnswer)
   socket.on('disconnect', disconnect)
 })
 
-function disconnect () {
+function disconnect (data) {
   if (clients > 0) {
     clients--
   }
+  console.log('disconnect fired')
 }
 
 function sendOffer (offer) {
